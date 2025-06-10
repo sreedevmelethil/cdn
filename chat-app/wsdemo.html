@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://cdn.jsdelivr.net/npm/protobufjs@7.X.X/dist/protobuf.min.js"></script>
+  <title id="dynamicTitle">Youkthi Agent Example</title>
+  <style>
+    body {
+      margin: 0;
+      padding: 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      height: 100vh;
+      background-color: #121212;
+      color: #ffffff;
+      font-family: Arial, sans-serif;
+    }
+
+    .bot-container {
+     
+     
+      padding: 20px;
+      border-radius: 10px;
+      background-color: #1e1e1e;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.5);
+    }
+
+    .bot-avatar {
+      position: relative;
+      width: 100px;
+      height: 100px;
+      margin: 0 auto 20px;
+      border-radius: 50%;
+      background-color: #3a3a3a;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      font-size: 50px;
+      color: #ffffff;
+    }
+
+    .bot-avatar img {
+      width: 100px;
+      height: 100px;
+      border-radius: 50%;
+      object-fit: cover;
+    }
+
+    .bot-avatar.playing::after {
+      content: '';
+      position: absolute;
+      width: 100px;
+      height: 100px;
+      border: 5px solid #00ff00;
+      border-radius: 50%;
+      animation: pulse 1s infinite;
+    }
+
+    @keyframes pulse {
+      0% {
+        transform: scale(1);
+        opacity: 1;
+      }
+
+      100% {
+        transform: scale(1.2);
+        opacity: 0;
+      }
+    }
+
+    .bot-title {
+      font-size: 24px;
+      margin-bottom: 10px;
+    }
+
+    .bot-description {
+      font-size: 16px;
+      line-height: 1.5;
+      margin-bottom: 20px;
+    }
+
+    .bot-footer {
+      font-size: 14px;
+      color: #aaaaaa;
+      margin-top: 20px;
+    }
+
+    button {
+      padding: 10px 20px;
+      margin: 5px;
+      border: none;
+      border-radius: 5px;
+      background-color: #3a3a3a;
+      color: #ffffff;
+      cursor: pointer;
+      font-size: 16px;
+    }
+
+    button:disabled {
+      background-color: #555555;
+      cursor: not-allowed;
+    }
+
+    button:hover:not(:disabled) {
+      background-color: #505050;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="bot-container">
+    <div class="bot-avatar"><img src="https://ik.imagekit.io/oorib61a24/tr:n-ik_ml_thumbnail/avatar/673c8ce7e70e676fcd8120c3.png?1741587703.508833"></div>
+    <div class="bot-title" id="botTitle">Dina</div>
+    <div class="bot-description" id="botDescription">
+      Sreedev's Personal Assistant, who can look at the calendar and schedule appointments.
+    </div>
+    <button id="startAudioBtn">Start Audio</button>
+    <button id="stopAudioBtn">Stop Audio</button>
+    <div class="bot-footer">Powered by Yukthi.ai</div>
+  </div>
+  <script>
+    // Update the title and bot title dynamically from the query string
+    const params = new URLSearchParams(window.location.search);
+    const title = params.get('title') || 'Youkthi Agent Example';
+    const description = params.get('description') || "";
+    const sessionID = params.get('sid')
+    const deploymentID = params.get('did')
+    const wid = params.get('wid')
+    const avatar = params.get('avatar')
+    document.getElementById('dynamicTitle').textContent = title;
+    document.getElementById('botTitle').textContent = title;
+    document.getElementById('botDescription').textContent = description;
+    if (avatar) {
+      document.querySelector('.bot-avatar img').src = avatar;
+    }
+
+    const SAMPLE_RATE = 16000;
+    const NUM_CHANNELS = 1;
+    const PLAY_TIME_RESET_THRESHOLD_MS = 1.0;
+
+    // The protobuf type. We will load it later.
+    let Frame = null;
+
+    // The websocket connection.
+    let ws = null;
+
+    // The audio context
+    let audioContext = null;
+
+    // The audio context media stream source
+    let source = null;
+
+    // The microphone stream from getUserMedia. SHould be sampled to the
+    // proper sample rate.
+    let microphoneStream = null;
+
+    // Script processor to get data from microphone.
+    let scriptProcessor = null;
+
+    // AudioContext play time.
+    let playTime = 0;
+
+    // Last time we received a websocket message.
+    let lastMessageTime = 0;
+
+    // Whether we should be playing audio.
+    let isPlaying = false;
+
+    let startBtn = document.getElementById('startAudioBtn');
+    let stopBtn = document.getElementById('stopAudioBtn');
+
+    const proto = protobuf.load('frames.proto', (err, root) => {
+      if (err) {
+        throw err;
+      }
+      Frame = root.lookupType('pipecat.Frame');
+      // const progressText = document.getElementById('progressText');
+      // progressText.textContent = 'We are ready! Make sure to run the server and then click `Start Audio`.';
+
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+    });
+
+    function initWebSocket() {
+      // ws = new WebSocket('ws://localhost:8765/' + deploymentID + '/' + sessionID +'/' + wid);
+      ws = new WebSocket('ws://localhost:8765/673c8ce7e70e676fcd8120c3/67de2ac42e0ac653321a6e7e/ykt-wrk-space-10293049');
+      // This is so `event.data` is already an ArrayBuffer.
+      ws.binaryType = 'arraybuffer';
+
+      ws.addEventListener('open', handleWebSocketOpen);
+      ws.addEventListener('message', handleWebSocketMessage);
+      ws.addEventListener('close', (event) => {
+        console.log('WebSocket connection closed.', event.code, event.reason);
+        stopAudio(false);
+      });
+      ws.addEventListener('error', (event) => console.error('WebSocket error:', event));
+    }
+
+    function handleWebSocketOpen(event) {
+      console.log('WebSocket connection established.', event)
+
+      navigator.mediaDevices.getUserMedia({
+        audio: {
+          sampleRate: SAMPLE_RATE,
+          channelCount: NUM_CHANNELS,
+          autoGainControl: true,
+          echoCancellation: true,
+          noiseSuppression: true,
+        }
+      }).then((stream) => {
+        microphoneStream = stream;
+        // 512 is closest thing to 200ms.
+        scriptProcessor = audioContext.createScriptProcessor(512, 1, 1);
+        source = audioContext.createMediaStreamSource(stream);
+        source.connect(scriptProcessor);
+        scriptProcessor.connect(audioContext.destination);
+
+        scriptProcessor.onaudioprocess = (event) => {
+          if (!ws) {
+            return;
+          }
+
+          const audioData = event.inputBuffer.getChannelData(0);
+          const pcmS16Array = convertFloat32ToS16PCM(audioData);
+          const pcmByteArray = new Uint8Array(pcmS16Array.buffer);
+          const frame = Frame.create({
+            audio: {
+              audio: Array.from(pcmByteArray),
+              sampleRate: SAMPLE_RATE,
+              numChannels: NUM_CHANNELS
+            }
+          });
+          const encodedFrame = new Uint8Array(Frame.encode(frame).finish());
+          ws.send(encodedFrame);
+        };
+      }).catch((error) => console.error('Error accessing microphone:', error));
+    }
+
+    
+
+
+    function handleWebSocketMessage(event) {
+     
+      const arrayBuffer = event.data;
+      if (isPlaying) {
+        enqueueAudioFromProto(arrayBuffer);
+        document.querySelector('.bot-avatar').classList.add('playing');
+      }
+    }
+
+    function enqueueAudioFromProto(arrayBuffer) {
+      const parsedFrame = Frame.decode(new Uint8Array(arrayBuffer));
+      if (!parsedFrame?.audio) {
+        document.querySelector('.bot-avatar').classList.remove('playing');
+        return false;
+      }
+
+      // Reset play time if it's been a while we haven't played anything.
+      const diffTime = audioContext.currentTime - lastMessageTime;
+      if ((playTime == 0) || (diffTime > PLAY_TIME_RESET_THRESHOLD_MS)) {
+        playTime = audioContext.currentTime;
+      }
+      lastMessageTime = audioContext.currentTime;
+
+      // We should be able to use parsedFrame.audio.audio.buffer but for
+      // some reason that contains all the bytes from the protobuf message.
+      const audioVector = Array.from(parsedFrame.audio.audio);
+      const audioArray = new Uint8Array(audioVector);
+
+      audioContext.decodeAudioData(audioArray.buffer, function (buffer) {
+        const source = new AudioBufferSourceNode(audioContext);
+        source.buffer = buffer;
+        source.start(playTime);
+        source.connect(audioContext.destination);
+        playTime = playTime + buffer.duration;
+
+        source.onended = () => {
+          document.querySelector('.bot-avatar').classList.remove('playing');
+        };
+      });
+    }
+
+    function convertFloat32ToS16PCM(float32Array) {
+      let int16Array = new Int16Array(float32Array.length);
+
+      for (let i = 0; i < float32Array.length; i++) {
+        let clampedValue = Math.max(-1, Math.min(1, float32Array[i]));
+        int16Array[i] = clampedValue < 0 ? clampedValue * 32768 : clampedValue * 32767;
+      }
+      return int16Array;
+    }
+
+    function startAudioBtnHandler() {
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        alert('getUserMedia is not supported in your browser.');
+        return;
+      }
+
+      startBtn.disabled = true;
+      stopBtn.disabled = false;
+
+      audioContext = new (window.AudioContext || window.webkitAudioContext)({
+        latencyHint: 'interactive',
+        sampleRate: SAMPLE_RATE
+      });
+
+      isPlaying = true;
+
+      initWebSocket();
+    }
+
+    function stopAudio(closeWebsocket) {
+      playTime = 0;
+      isPlaying = false;
+      startBtn.disabled = false;
+      stopBtn.disabled = true;
+
+      if (ws && closeWebsocket) {
+        ws.close();
+        ws = null;
+      }
+
+      if (scriptProcessor) {
+        scriptProcessor.disconnect();
+      }
+      if (source) {
+        source.disconnect();
+      }
+      document.querySelector('.bot-avatar').classList.remove('playing');
+    }
+
+    function stopAudioBtnHandler() {
+      stopAudio(true);
+    }
+
+    startBtn.addEventListener('click', startAudioBtnHandler);
+    stopBtn.addEventListener('click', stopAudioBtnHandler);
+    startBtn.disabled = true;
+    stopBtn.disabled = true;
+  </script>
+</body>
+
+</html>
