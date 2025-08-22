@@ -1,0 +1,422 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sreedev Melethil - CV</title>
+    <!-- Tailwind CSS CDN for modern styling -->
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+    <style>
+        /* Use a modern font like Inter */
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #f3f4f6;
+            color: #374151;
+        }
+
+        /* Custom scrollbar for a cleaner look */
+        ::-webkit-scrollbar {
+            width: 8px;
+        }
+
+        ::-webkit-scrollbar-track {
+            background: #e5e7eb;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb {
+            background: #9ca3af;
+            border-radius: 10px;
+        }
+
+        ::-webkit-scrollbar-thumb:hover {
+            background: #6b7280;
+        }
+
+        /* Vertical timeline line on the left side, now with a subtle gradient */
+        .timeline-line {
+            position: absolute;
+            left: 20px;
+            top: 56px;
+            bottom: 0;
+            width: 3px;
+            background-image: linear-gradient(to bottom, #3b82f6, #60a5fa);
+        }
+
+        .work-item-container {
+            position: relative;
+            padding-left: 2rem;
+        }
+
+        .work-item-container:before {
+            content: '';
+            position: absolute;
+            left: 0.75rem;
+            top: 0;
+            bottom: 0;
+            width: 2px;
+            background-color: #a0aec0;
+            /* A light gray for the timeline line */
+        }
+
+        .work-item-container .dot {
+            position: absolute;
+            left: 0.5rem;
+            top: 0;
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: #2b6cb0;
+            border: 2px solid #ffffff;
+        }
+    </style>
+</head>
+
+<body class="bg-gray-100 text-gray-700 leading-relaxed">
+
+    <!-- Main Container -->
+    <div class="max-w-4xl mx-auto p-4 md:p-8 space-y-8">
+
+        <!-- Header Section -->
+        <header
+            class="bg-gray-800 text-white rounded-xl shadow-lg p-6 md:p-8 flex flex-col md:flex-row items-center md:items-start justify-between">
+            <div class="flex-1 text-center md:text-left">
+                <h1 class="text-3xl md:text-4xl font-bold tracking-tight mb-1">Sreedev Melethil</h1>
+                <p class="text-lg md:text-xl text-gray-300 font-light">Technology & Architecture Governance</p>
+            </div>
+            <div class="mt-4 md:mt-0 text-center md:text-right">
+                <div class="flex items-center justify-center md:justify-end mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
+                    </svg>
+                    <span class="text-gray-400">Abu Dhabi, UAE</span>
+                </div>
+                <div class="flex items-center justify-center md:justify-end mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 5a2 2 0 012-2h3.28a1 1 0 01.948.684l1.498 4.493a1 1 0 01-.502 1.113l-3.243 1.88a6.002 6.002 0 006.57 6.57l1.88-3.243a1 1 0 011.113-.502l4.493 1.498a1 1 0 01.684.949V19a2 2 0 01-2 2h-1C9.716 21 3 14.284 3 6V5z" />
+                    </svg>
+                    <span class="text-gray-400">+971-56970-8658</span>
+                </div>
+                <div class="flex items-center justify-center md:justify-end mb-1">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+                    </svg>
+                    <a href="mailto:sreedev.m@gmail.com"
+                        class="text-gray-400 hover:text-white transition-colors">sreedev.m@gmail.com</a>
+                </div>
+                <div class="flex items-center justify-center md:justify-end">
+                    <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 mr-2 text-gray-400" fill="none"
+                        viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                    </svg>
+                    <a href="https://www.linkedin.com/in/smelet"
+                        class="text-gray-400 hover:text-white transition-colors"
+                        target="_blank">linkedin.com/in/smelethil</a>
+                </div>
+            </div>
+            <img src="https://media.licdn.com/dms/image/v2/D5603AQE5oJc0sawEgA/profile-displayphoto-shrink_400_400/profile-displayphoto-shrink_400_400/0/1721405575254?e=1758758400&v=beta&t=Ns8mnWl96eAEDGKEODfp_SMyUm-5qtqUjcoLBylIC60"
+                alt="Sreedev Melethil's profile picture"
+                class="w-24 h-24 md:w-32 md:h-32 rounded-full ring-4 ring-white shadow-lg mt-4 md:mt-0 md:ml-6 object-cover">
+        </header>
+
+        <!-- Main Content Area -->
+        <main class="bg-white rounded-xl shadow-lg p-6 md:p-8 space-y-8">
+
+            <!-- Section: Professional Overview -->
+            <section class="border-b pb-4">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Professional Overview</h2>
+                <p class="text-justify text-gray-600">
+                    Highly accomplished and results-driven IT Leader with over 17 years of experience spearheading
+                    complex digital transformation, enterprise architecture, and robust governance initiatives. Proven
+                    ability to strategically align technology with business objectives, lead high-performing, globally
+                    distributed teams, and deliver impactful solutions and significant cost savings. Expertise includes
+                    defining and executing digital and AI strategies for a global group, and digitalizing services
+                    within a government-operated free zone.
+                </p>
+            </section>
+
+            <!-- Section: Core Competencies -->
+            <section class="border-b pb-4">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Core Competencies</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-blue-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path d="M12 2L2 7l10 5 10-5-10-5zM2 17l10 5 10-5M2 12l10 5 10-5" />
+                            </svg>
+                            IT Governance & Architecture
+                        </h3>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 text-sm">
+                            <li>Enterprise Architecture</li>
+                            <li>IT Governance Frameworks</li>
+                            <li>Application Portfolio Management (APM)</li>
+                            <li>AI Governance</li>
+                            <li>Architectural Principles</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-green-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <path
+                                    d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5A5.5 5.5 0 017.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3A5.5 5.5 0 0122 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z" />
+                            </svg>
+                            Emerging Technologies
+                        </h3>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 text-sm">
+                            <li>Blockchain (IBM Hyperledger)</li>
+                            <li>Artificial Intelligence (AI)</li>
+                            <li>Digital Billing & Payments</li>
+                            <li>Microservices</li>
+                            <li>API Management</li>
+                            <li>DevOps</li>
+                            <li>Cloud Strategy (Azure/AWS)</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-purple-500"
+                                viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+                                stroke-linecap="round" stroke-linejoin="round">
+                                <rect x="3" y="4" width="18" height="18" rx="2" ry="2" />
+                                <line x1="3" y1="10" x2="21" y2="10" />
+                            </svg>
+                            Enterprise Systems
+                        </h3>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 text-sm">
+                            <li>SAP, Oracle Fusion</li>
+                            <li>Salesforce (CRM concepts)</li>
+                            <li>Enterprise Integration</li>
+                            <li>Data Platforms (Snowflake, Informatica, Power BI)</li>
+                            <li>ERP, CRM, Asset Management</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="text-lg font-bold text-gray-800 mb-2 flex items-center">
+                            <svg xmlns="http://www.w3.org/2000/svg" class="h-6 w-6 mr-2 text-yellow-500" fill="none"
+                                viewBox="0 0 24 24" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+                                stroke-linejoin="round">
+                                <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2" />
+                                <circle cx="9" cy="7" r="4" />
+                                <path d="M23 21v-2a4 4 0 00-3-3.87" />
+                                <path d="M16 3.13a4 4 0 010 7.75" />
+                            </svg>
+                            Leadership & Management
+                        </h3>
+                        <ul class="list-disc list-inside text-gray-600 space-y-1 text-sm">
+                            <li>Global Team Leadership</li>
+                            <li>Strategic Planning</li>
+                            <li>Vendor Collaboration</li>
+                            <li>Stakeholder Engagement</li>
+                            <li>Cross-functional Leadership</li>
+                            <li>Product Ownership</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+         
+            <!-- Work Experience -->
+            <section>
+          
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Work Experience</h2>
+                <div class="space-y-6">
+                    <!-- ABU DHABI PORTS GROUP: Manager -->
+                    <div class="work-item-container">
+                        <div class="dot"></div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Manager - Technology & Architecture Governance</h3>
+                                <p class="text-sm font-medium text-gray-600">ABU DHABI PORTS GROUP, ABU DHABI</p>
+                            </div>
+                            <span class="text-sm text-gray-500 font-medium">2024 - Present</span>
+                        </div>
+                        <p class="font-medium text-sm mt-2">Responsibilities:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Develop and enforce comprehensive governance frameworks for technology and applications,
+                                collaborating directly with business leaders and cross-functional teams.</li>
+                            <li>Oversee the entire lifecycle of critical applications (e.g., ERP, CRM, Asset Management,
+                                TOS), proactively engaging with business owners to optimize performance, security, and
+                                integration.</li>
+                            <li>Lead the evaluation, selection, and approval process for new technology solutions,
+                                facilitating consensus among diverse stakeholders including IT, business units, and
+                                executive leadership.</li>
+                            <li>Monitor and ensure compliance with technology standards, policies, and regulatory
+                                requirements, conducting regular audits and communicating findings.</li>
+                            <li>Act as a liaison between geographically distributed technical and business leadership,
+                                translating complex technical concepts into understandable business concepts.</li>
+                            <li>Manage vendor relationships and contracts to ensure quality delivery and alignment with
+                                organizational standards.</li>
+                        </ul>
+                        <p class="font-medium text-sm mt-2">Key Achievements:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Successfully implemented an enterprise application portfolio management (APM) system
+                                (SAP LeanIX), achieved through securing buy-in and active participation from key IT and
+                                business stakeholders.</li>
+                            <li>Established and chaired the Architecture Board, successfully fostering a collaborative
+                                environment for decision-making and cross-functional alignment on architectural
+                                principles and technology roadmap.</li>
+                            <li>Spearheaded initiatives that resulted in USD 8M in cost savings through strategic
+                                application rationalization, vendor consolidation, and the optimization of cloud
+                                architecture.</li>
+                            <li>Implemented AI governance frameworks, ensuring the responsible, ethical, and secure
+                                adoption of artificial intelligence technologies across the organization.</li>
+                        </ul>
+                    </div>
+
+                    <!-- ABU DHABI PORTS GROUP: Head of Applications -->
+                    <div class="work-item-container mt-6">
+                        <div class="dot"></div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Head of Applications & Data Architecture</h3>
+                                <p class="text-sm font-medium text-gray-600">ABU DHABI PORTS GROUP, ABU DHABI</p>
+                            </div>
+                            <span class="text-sm text-gray-500 font-medium">2018-2024</span>
+                        </div>
+                        <p class="font-medium text-sm mt-2">Responsibilities:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Spearheaded the strategic direction, design, and seamless implementation of
+                                mission-critical applications within a highly integrated and service-oriented enterprise
+                                landscape.</li>
+                            <li>Developed and executed comprehensive roadmaps for large-scale application migrations to
+                                cloud platforms, significantly enhancing cost optimization and system availability.</li>
+                            <li>Provided leadership to product owners, business process analysis teams, solution design
+                                specialists, and application management functions, ensuring cohesive development and
+                                operational excellence.</li>
+                            <li>Drove the adoption of advanced technology and application development methodologies to
+                                elevate service experience and maximize customer satisfaction.</li>
+                            <li>Lead the design and implementation of the Enterprise Integration platform, enabling
+                                robust API-led connectivity for enterprise-wide integration.</li>
+                        </ul>
+                        <p class="font-medium text-sm mt-2">Key Achievements:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Successfully led the implementation of Oracle Fusion applications, resulting in the
+                                significant streamlining of business processes and substantial improvements in
+                                operational efficiency.</li>
+                            <li>Delivered the Group's data platform, strategically leveraging Snowflake, Informatica,
+                                and Power BI to empower advanced analytics and robust business intelligence capabilities
+                                across the organization.</li>
+                            <li>Designed and implemented cutting-edge payment aggregation and digital wallet solutions,
+                                playing a pivotal role in the successful cashless payment initiative for Abu Dhabi
+                                Ports.</li>
+                            <li>Ensured adherence to enterprise architecture standards and principles, specifically
+                                driving the adoption of containerized microservice deployments, DevOps practices, and
+                                test automation within a lean-agile methodology.</li>
+                        </ul>
+                    </div>
+
+                    <!-- ABU DHABI PORTS GROUP: Applications Architect -->
+                    <div class="work-item-container mt-6">
+                        <div class="dot"></div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Applications Architect</h3>
+                                <p class="text-sm font-medium text-gray-600">ABU DHABI PORTS GROUP, ABU DHABI</p>
+                            </div>
+                            <span class="text-sm text-gray-500 font-medium">2016-2018</span>
+                        </div>
+                        <p class="font-medium text-sm mt-2">Responsibilities & Achievements:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Monitored the performance of microservices, mobile applications, and customer-facing web
+                                solutions. Developed comprehensive coding standards, security guidelines, and automated
+                                testing strategies, while providing training. Managed the design and development of
+                                critical digital billing and payment platforms.</li>
+                            <li>Successfully transformed multiple monolithic legacy applications into microservice
+                                architectures, which significantly improved usability and performance by over 50%.
+                                Promoted to Head of Architecture.</li>
+                        </ul>
+                    </div>
+
+                    <!-- HIGHER COLLEGES OF TECHNOLOGY -->
+                    <div class="work-item-container mt-6">
+                        <div class="dot"></div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Web Service Coordinator & Applications Architect
+                                </h3>
+                                <p class="text-sm font-medium text-gray-600">HIGHER COLLEGES OF TECHNOLOGY, ABU DHABI
+                                </p>
+                            </div>
+                            <span class="text-sm text-gray-500 font-medium">2013-2016</span>
+                        </div>
+                        <p class="font-medium text-sm mt-2">Responsibilities:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Lead enterprise-wide application restructure planning, design, and implementation.</li>
+                            <li>Execute a large-scale web transformation project for 12 campuses.</li>
+                            <li>Collaborate with cross-departmental teams to deliver solutions effectively.</li>
+                            <li>Supports and participate in working group on web strategies that interacts with
+                                cross-campus departments.</li>
+                        </ul>
+                        <p class="font-medium text-sm mt-2">Key Achievements:</p>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>Led a large-scale web transformation initiative, improving application performance and
+                                user experience across 17 campuses across UAE.</li>
+                        </ul>
+                    </div>
+
+                    <!-- EARLIER CAREER EXPERIENCE -->
+                    <div class="work-item-container mt-6">
+                        <div class="dot"></div>
+                        <div class="flex justify-between items-baseline mb-1">
+                            <div>
+                                <h3 class="font-bold text-gray-800">Earlier Career Experience</h3>
+                                <p class="text-sm font-medium text-gray-600">Various Companies, Various Locations</p>
+                            </div>
+                            <span class="text-sm text-gray-500 font-medium">2003-2013</span>
+                        </div>
+                        <ul class="list-disc list-outside ml-4 text-sm leading-snug space-y-0.5">
+                            <li>**Technical Lead** | NOUS INFO SYSTEMS, Bangalore, INDIA | 2012-2013</li>
+                            <li>**Consultant ERP** | CERT, Abu Dhabi, UAE | 2011-2012</li>
+                            <li>**IT Professional** | Various Companies, Various Locations | 2003-2011</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Section: Education & Certifications -->
+            <section class="border-t pt-4">
+                <h2 class="text-2xl font-semibold text-gray-800 mb-4">Education & Certifications</h2>
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-gray-800">Education</h3>
+                        <ul class="list-disc list-inside text-gray-600 mt-2 space-y-1 text-sm">
+                            <li>**M.B.A** - eBusiness, Annamalai University | 2012</li>
+                            <li>**Bachelor (B.C.A)** - University Of Madras | 2003</li>
+                        </ul>
+                    </div>
+                    <div class="bg-gray-50 p-4 rounded-lg shadow-sm">
+                        <h3 class="font-semibold text-gray-800">Certifications</h3>
+                        <ul class="list-disc list-inside text-gray-600 mt-2 space-y-1 text-sm">
+                            <li>TOGAF 9.2</li>
+                            <li>Digital Transformation (IBM)</li>
+                            <li>PMP</li>
+                        </ul>
+                    </div>
+                </div>
+            </section>
+
+        </main>
+
+        <!-- Footer -->
+        <footer class="text-center text-gray-500 text-sm mt-8">
+            <p>&copy; 2024 Sreedev Melethil. All rights reserved.</p>
+        </footer>
+
+    </div>
+</body>
+
+</html>
