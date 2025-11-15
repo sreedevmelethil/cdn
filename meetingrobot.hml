@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>n8n Workflows – Meeting Robot Backend & Brain</title>
+  <style>
+/*    :root {
+      --bg: #020617;
+      --card: #020617;
+      --border: #1f2937;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.16);
+      --accent-2: #38bdf8;
+      --accent-3: #a855f7;
+      --accent-4: #f97316;
+      --text-main: #e5e7eb;
+      --text-muted: #9ca3af;
+      --text-soft: #6b7280;
+      --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.75);
+      --radius: 14px;
+    }*/
+    :root {
+      /* AD Ports–inspired palette: deep navy + maritime blue + teal */
+      --bg: #020b1f;
+      --card: #020b1f;
+      --border: #16324f;
+      --accent: #00b0ca;   /* teal / aqua */
+      --accent-soft: rgba(34, 197, 94, 0.16);
+      --accent-2: #004a7c; /* deep maritime blue */
+      --accent-3: #5cd4ff; /* light cyan accent */
+      --accent-4: #f9a826; /* warm amber highlight */
+      --text-main: #e5f4ff;
+      --text-muted: #9fb3d1;
+      --text-soft: #7b8ba8;
+      --shadow-soft: 0 20px 50px rgba(3, 12, 30, 0.95);
+      --radius: 14px;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      padding: 24px;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
+        "Segoe UI", sans-serif;
+      background:
+        radial-gradient(circle at top, #0b1120 0, #020617 45%, #020617 70%, #000 100%);
+      color: var(--text-main);
+    }
+
+    .page {
+      max-width: 1240px;
+      margin: 0 auto;
+    }
+
+    .title {
+      font-size: 26px;
+      font-weight: 650;
+      letter-spacing: 0.05em;
+      margin-bottom: 8px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      text-transform: uppercase;
+    }
+
+    .robot-dot {
+      width: 14px;
+      height: 14px;
+      border-radius: 999px;
+      background:
+        radial-gradient(circle, #bbf7d0 0, #22c55e 40%, #16a34a 100%);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+    }
+
+    .subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+      max-width: 780px;
+      margin-bottom: 20px;
+    }
+
+    .legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 10px;
+      margin-bottom: 20px;
+      font-size: 11px;
+      color: var(--text-soft);
+    }
+
+    .legend-item {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 10px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.9);
+      border: 1px solid rgba(31, 41, 55, 0.9);
+    }
+
+    .legend-dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 999px;
+    }
+
+    .legend-dot.flow {
+      background: linear-gradient(135deg, #22c55e, #4ade80);
+    }
+
+    .legend-dot.event {
+      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
+    }
+
+    .legend-dot.memory {
+      background: linear-gradient(135deg, #a855f7, #8b5cf6);
+    }
+
+    .legend-dot.signal {
+      background: linear-gradient(135deg, #f97316, #fb923c);
+    }
+
+    .workflow {
+      border-radius: 26px;
+      padding: 18px 18px 16px;
+      margin-bottom: 20px;
+      background: radial-gradient(circle at top left, #020617 0, #020617 55%, #020617 100%);
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      box-shadow: var(--shadow-soft);
+    }
+
+    .workflow-header {
+      display: flex;
+      align-items: baseline;
+      justify-content: space-between;
+      gap: 10px;
+      margin-bottom: 14px;
+    }
+
+    .workflow-title {
+      font-size: 15px;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-muted);
+    }
+
+    .workflow-tag {
+      font-size: 11px;
+      padding: 4px 10px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      background: rgba(15, 118, 110, 0.18);
+      color: #a5f3fc;
+      border: 1px solid rgba(34, 211, 238, 0.4);
+    }
+
+    .workflow-desc {
+      font-size: 12px;
+      color: var(--text-soft);
+      margin-bottom: 14px;
+      max-width: 900px;
+    }
+
+    /* n8n lane layout */
+    .lanes {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .lane {
+      flex: 1 1 0;
+      min-width: 260px;
+      border-radius: 18px;
+      background: rgba(15, 23, 42, 0.85);
+      border: 1px solid rgba(30, 64, 175, 0.6);
+      padding: 10px 10px 10px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .lane-title {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      color: var(--text-soft);
+      margin-bottom: 6px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+    }
+
+    .lane-tag {
+      font-size: 10px;
+      padding: 2px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(15, 23, 42, 0.9);
+      color: var(--text-muted);
+    }
+
+    .lane-body {
+      position: relative;
+      padding-top: 4px;
+    }
+
+    /* Node (n8n style) */
+    .node {
+      border-radius: var(--radius);
+      padding: 6px 8px;
+      margin-bottom: 8px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(55, 65, 81, 1);
+      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.75);
+      font-size: 11px;
+      position: relative;
+    }
+
+    .node::before {
+      content: "";
+      position: absolute;
+      left: -12px;
+      top: 50%;
+      width: 10px;
+      height: 2px;
+      background: linear-gradient(to right, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.7));
+    }
+
+    .node.first::before {
+      display: none;
+    }
+
+    .node-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 3px;
+    }
+
+    .node-name {
+      font-weight: 600;
+      font-size: 11px;
+    }
+
+    .node-type {
+      font-size: 9px;
+      padding: 2px 6px;
+      border-radius: 999px;
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      color: var(--text-soft);
+    }
+
+    .node-body {
+      font-size: 10px;
+      color: var(--text-muted);
+      line-height: 1.4;
+    }
+
+    .node-body ul {
+      padding-left: 12px;
+      margin: 3px 0 0;
+    }
+
+    .node-body li {
+      margin-bottom: 2px;
+    }
+
+    /* Node color themes */
+    .node.trigger {
+      border-color: rgba(34, 197, 94, 0.7);
+      background: linear-gradient(145deg, rgba(34, 197, 94, 0.22), rgba(15, 23, 42, 0.98));
+    }
+
+    .node.stt {
+      border-color: rgba(56, 189, 248, 0.8);
+      background: linear-gradient(145deg, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.98));
+    }
+
+    .node.data {
+      border-color: rgba(168, 85, 247, 0.8);
+      background: linear-gradient(145deg, rgba(168, 85, 247, 0.18), rgba(15, 23, 42, 0.98));
+    }
+
+    .node.llm {
+      border-color: rgba(249, 115, 22, 0.85);
+      background: linear-gradient(145deg, rgba(249, 115, 22, 0.18), rgba(15, 23, 42, 0.98));
+    }
+
+    .node.control {
+      border-color: rgba(148, 163, 184, 0.9);
+      background: linear-gradient(145deg, rgba(148, 163, 184, 0.14), rgba(15, 23, 42, 0.98));
+    }
+
+    .node.signal {
+      border-color: rgba(34, 197, 94, 0.95);
+      background: linear-gradient(145deg, rgba(34, 197, 94, 0.28), rgba(15, 23, 42, 0.98));
+    }
+
+    .arrow-label {
+      font-size: 9px;
+      color: var(--text-soft);
+      margin: 2px 0 6px 18px;
+      position: relative;
+    }
+
+    .arrow-label::before {
+      content: "";
+      position: absolute;
+      left: -10px;
+      top: 50%;
+      width: 8px;
+      height: 1px;
+      background: linear-gradient(to right, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.7));
+    }
+
+    .footer-note {
+      font-size: 11px;
+      color: var(--text-soft);
+      padding: 10px 12px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.8);
+      background: radial-gradient(circle at left, rgba(34, 197, 94, 0.14), #020617);
+      display: inline-flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      align-items: center;
+      margin-top: 4px;
+    }
+
+    .footer-note strong {
+      color: var(--accent);
+      font-weight: 600;
+    }
+
+    @media (max-width: 960px) {
+      .lane {
+        min-width: 100%;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <div class="title">
+      <span class="robot-dot"></span>
+      n8n Workflows – Meeting Robot Backend & Brain
+    </div>
+    <div class="subtitle">
+      Two n8n workflows: (A) Audio Gateway / STT Proxy handling 11Labs transcription, chunking,
+      vectorization, and Supabase writes; (B) Robot Brain that listens to transcript events,
+      pulls context + memory, and decides when to raise a signal.
+    </div>
+
+    <div class="legend">
+      <div class="legend-item">
+        <span class="legend-dot flow"></span> Main flow of data
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot event"></span> Events / triggers
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot memory"></span> Supabase / semantic memory
+      </div>
+      <div class="legend-item">
+        <span class="legend-dot.signal"></span> Robot signals to backend API
+      </div>
+    </div>
+
+    <!-- WORKFLOW A: AUDIO + STT + CHUNKS + VECTORS -->
+    <div class="workflow">
+      <div class="workflow-header">
+        <div class="workflow-title">A. Audio → STT → Chunks → Vectors (Backend Pipeline)</div>
+        <div class="workflow-tag">Audio Gateway / STT Proxy</div>
+      </div>
+      <div class="workflow-desc">
+        n8n workflow receives browser audio chunks, calls 11Labs STT with diarization,
+        assembles stable 5–10s transcript chunks, vectorizes them via an embedding API, and writes
+        into Supabase (<code>transcript_chunks</code> + embedding/vector column).
+      </div>
+
+      <div class="lanes">
+        <!-- Lane 1: Ingress & STT -->
+        <div class="lane">
+          <div class="lane-title">
+            Ingress & STT
+            <span class="lane-tag">Audio → Text</span>
+          </div>
+          <div class="lane-body">
+            <div class="node trigger first">
+              <div class="node-header">
+                <div class="node-name">Webhook: /audio-chunk</div>
+                <div class="node-type">Trigger</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Entry point from browser portal</li>
+                  <li>Receives meeting_id + audio blob</li>
+                  <li>Generates <code>client_chunk_id</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">clean + normalize inputs</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">Function: Prepare STT Request</div>
+                <div class="node-type">Code</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Validates meeting_id & auth</li>
+                  <li>Attaches diarization parameters</li>
+                  <li>Maps audio blob to 11Labs format</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">call 11Labs STT</div>
+
+            <div class="node stt">
+              <div class="node-header">
+                <div class="node-name">HTTP: 11Labs STT + Diarization</div>
+                <div class="node-type">HTTP</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>POST audio to 11Labs transcription API</li>
+                  <li>Requests multi-speaker diarization</li>
+                  <li>Receives segments + timestamps</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">normalize 11Labs response</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">Function: Normalize STT Output</div>
+                <div class="node-type">Code</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Flattens segments to transcript text</li>
+                  <li>Builds <code>speakers[]</code> JSON</li>
+                  <li>Maps timestamps → session clock</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lane 2: Chunking & Supabase write -->
+        <div class="lane">
+          <div class="lane-title">
+            Chunking & Storage
+            <span class="lane-tag">5–10s transcript chunks</span>
+          </div>
+          <div class="lane-body">
+            <div class="node control first">
+              <div class="node-header">
+                <div class="node-name">Function: Build Chunk Window</div>
+                <div class="node-type">Code</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Aggregates STT segments into 5–10s window</li>
+                  <li>Computes <code>chunk_index</code></li>
+                  <li>Prepares row for <code>transcript_chunks</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">upsert chunk row</div>
+
+            <div class="node data">
+              <div class="node-header">
+                <div class="node-name">Supabase: Insert Transcript Chunk</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Insert / upsert into <code>transcript_chunks</code></li>
+                  <li>Columns: meeting_id, chunk_index, times</li>
+                  <li>Saves transcript, speakers, metadata JSON</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">emit event for live UIs & robot</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">HTTP: Publish Transcript Event</div>
+                <div class="node-type">HTTP / WS</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>POST to event bus or WS gateway</li>
+                  <li>Payload: new chunk (normalized)</li>
+                  <li>Feeds browser live transcript + Robot Brain</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lane 3: Vectorization & Semantic Enrichment -->
+        <div class="lane">
+          <div class="lane-title">
+            Vectorization & Semantic Enrichment
+            <span class="lane-tag">Background path</span>
+          </div>
+          <div class="lane-body">
+            <div class="node trigger first">
+              <div class="node-header">
+                <div class="node-name">Supabase: New Chunk Trigger</div>
+                <div class="node-type">Trigger / Poll</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Runs on newly inserted chunks</li>
+                  <li>Filters “not yet embedded” rows</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">create embedding</div>
+
+            <div class="node llm">
+              <div class="node-header">
+                <div class="node-name">HTTP: Embedding API</div>
+                <div class="node-type">HTTP</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Calls Azure OpenAI / OpenAI embeddings</li>
+                  <li>Input: <code>transcript</code></li>
+                  <li>Output: vector + model name</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">write vector to Supabase</div>
+
+            <div class="node data">
+              <div class="node-header">
+                <div class="node-name">Supabase: Update Embedding Column</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Update <code>embedding</code>, <code>embedding_model</code></li>
+                  <li>Sets <code>embedding_created_at</code></li>
+                  <li>Now searchable via pgvector</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">optional: build semantic state</div>
+
+            <div class="node llm">
+              <div class="node-header">
+                <div class="node-name">LLM: Extract Decisions / Actions</div>
+                <div class="node-type">LLM</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Summarizes chunk into structured facts</li>
+                  <li>e.g., decisions, risks, owners, dates</li>
+                  <li>Writes into a <code>meeting_semantic_state</code> table</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="footer-note">
+        <strong>Outcome:</strong> STT pipeline in n8n turns raw audio → diarized text chunks in Supabase
+        → searchable vectors + optional structured semantic state for the Robot Brain.
+      </div>
+    </div>
+
+    <!-- WORKFLOW B: ROBOT BRAIN -->
+    <div class="workflow">
+      <div class="workflow-header">
+        <div class="workflow-title">B. Robot Brain – Signals & Context-Aware Decisions</div>
+        <div class="workflow-tag">Decision Engine / n8n</div>
+      </div>
+      <div class="workflow-desc">
+        A second n8n workflow listens to transcript events, pulls recent chunks and semantic state
+        from Supabase, maintains memory of previous robot actions, and decides whether to raise a
+        new robot signal to the backend (<code>/meetings/{id}/robot/signals</code>).
+      </div>
+
+      <div class="lanes">
+        <!-- Lane 1: Event subscription -->
+        <div class="lane">
+          <div class="lane-title">
+            Transcript Events
+            <span class="lane-tag">Streaming trigger</span>
+          </div>
+          <div class="lane-body">
+            <div class="node trigger first">
+              <div class="node-header">
+                <div class="node-name">Webhook / WS: Transcript Event In</div>
+                <div class="node-type">Trigger</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Called whenever a new chunk is stored</li>
+                  <li>Receives meeting_id + chunk metadata</li>
+                  <li>Acts as the Robot Brain entry point</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">debounce / throttle</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">Function: Throttle Per Meeting</div>
+                <div class="node-type">Code</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Ensures robot doesn’t run too often</li>
+                  <li>e.g., at most every 30–60 seconds</li>
+                  <li>Skips if previous evaluation was recent</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lane 2: Context & memory fetch -->
+        <div class="lane">
+          <div class="lane-title">
+            Context & Memory
+            <span class="lane-tag">Supabase reads</span>
+          </div>
+          <div class="lane-body">
+            <div class="node data first">
+              <div class="node-header">
+                <div class="node-name">Supabase: Recent Transcript Window</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Query last N minutes of chunks for meeting</li>
+                  <li>Ordered by <code>chunk_index</code> desc</li>
+                  <li>Provides “what just happened” context</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">semantic state</div>
+
+            <div class="node data">
+              <div class="node-header">
+                <div class="node-name">Supabase: Semantic State</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Reads <code>meeting_semantic_state</code></li>
+                  <li>Decisions, open questions, risks, actions</li>
+                  <li>Helps robot avoid repeating itself</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">robot’s own memory</div>
+
+            <div class="node data">
+              <div class="node-header">
+                <div class="node-name">Supabase: Robot Memory / Turns</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Previous robot signals & responses</li>
+                  <li>Feedback: helpful / not helpful</li>
+                  <li>Prevents duplicate suggestions</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lane 3: Decision logic -->
+        <div class="lane">
+          <div class="lane-title">
+            Decision Logic
+            <span class="lane-tag">LLM + Rules</span>
+          </div>
+          <div class="lane-body">
+            <div class="node llm first">
+              <div class="node-header">
+                <div class="node-name">LLM: Analyze Recent Discussion</div>
+                <div class="node-type">LLM</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Input: recent transcript + semantic state</li>
+                  <li>Output: issues, open questions, gaps</li>
+                  <li>Can be run via n8n “AI” or HTTP → AOAI</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">should robot speak?</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">Function: Decide Signal or No</div>
+                <div class="node-type">Code</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Interprets LLM output</li>
+                  <li>Checks cool-down period</li>
+                  <li>Sets <code>raise_signal</code> + <code>signal_type</code></li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">branch on result</div>
+
+            <div class="node control">
+              <div class="node-header">
+                <div class="node-name">Switch: Raise or Skip</div>
+                <div class="node-type">Control</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>If <code>raise_signal = false</code> → stop</li>
+                  <li>If true → build signal payload</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Lane 4: Signal creation & logging -->
+        <div class="lane">
+          <div class="lane-title">
+            Signal Creation
+            <span class="lane-tag">Backend callback</span>
+          </div>
+          <div class="lane-body">
+            <div class="node llm first">
+              <div class="node-header">
+                <div class="node-name">LLM: Draft Signal Preview & Title</div>
+                <div class="node-type">LLM</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Generates concise title + preview text</li>
+                  <li>Optional: pre-draft full robot response</li>
+                  <li>Examples: “Clarify timeline”, “Summarize risks”</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">call backend signal API</div>
+
+            <div class="node signal">
+              <div class="node-header">
+                <div class="node-name">HTTP: POST /meetings/{id}/robot/signals</div>
+                <div class="node-type">HTTP</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Payload: signal_type, title, preview, full_message</li>
+                  <li>Backend persists into <code>robot_signals</code></li>
+                  <li>UI shows the suggestion for human acceptance</li>
+                </ul>
+              </div>
+            </div>
+
+            <div class="arrow-label">log robot intent</div>
+
+            <div class="node data">
+              <div class="node-header">
+                <div class="node-name">Supabase: Append Robot Turn</div>
+                <div class="node-type">Supabase</div>
+              </div>
+              <div class="node-body">
+                <ul>
+                  <li>Logs the fact robot “wanted to speak”</li>
+                  <li>Includes generated signal_id (from API)</li>
+                  <li>Used in future memory & analytics</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <div class="footer-note">
+        <strong>Outcome:</strong>
+        Robot Brain workflow listens to new transcript chunks, understands recent context + past
+        actions, and only then raises a carefully-scoped robot signal into your backend
+        for human approval.
+      </div>
+    </div>
+  </div>
+</body>
+</html>
