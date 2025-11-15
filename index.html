@@ -2,38 +2,23 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8" />
-  <title>n8n Workflows – Meeting Robot Backend & Brain</title>
+  <title>Meeting Room Robot – Architecture (Azure Search)</title>
   <style>
-/*    :root {
-      --bg: #020617;
-      --card: #020617;
-      --border: #1f2937;
-      --accent: #22c55e;
-      --accent-soft: rgba(34, 197, 94, 0.16);
-      --accent-2: #38bdf8;
-      --accent-3: #a855f7;
-      --accent-4: #f97316;
-      --text-main: #e5e7eb;
-      --text-muted: #9ca3af;
-      --text-soft: #6b7280;
-      --shadow-soft: 0 20px 55px rgba(15, 23, 42, 0.75);
-      --radius: 14px;
-    }*/
     :root {
       /* AD Ports–inspired palette: deep navy + maritime blue + teal */
       --bg: #020b1f;
       --card: #020b1f;
       --border: #16324f;
       --accent: #00b0ca;   /* teal / aqua */
-      --accent-soft: rgba(34, 197, 94, 0.16);
       --accent-2: #004a7c; /* deep maritime blue */
       --accent-3: #5cd4ff; /* light cyan accent */
-      --accent-4: #f9a826; /* warm amber highlight */
+      --accent-4: #f9a826; /* warm amber */
       --text-main: #e5f4ff;
       --text-muted: #9fb3d1;
       --text-soft: #7b8ba8;
-      --shadow-soft: 0 20px 50px rgba(3, 12, 30, 0.95);
-      --radius: 14px;
+      --shadow-soft: 0 20px 55px rgba(3, 12, 30, 0.95);
+      --radius-lg: 18px;
+      --radius-xl: 22px;
     }
 
     * {
@@ -45,49 +30,49 @@
       padding: 24px;
       font-family: system-ui, -apple-system, BlinkMacSystemFont, "SF Pro Text",
         "Segoe UI", sans-serif;
-      background:
-        radial-gradient(circle at top, #0b1120 0, #020617 45%, #020617 70%, #000 100%);
+      background: radial-gradient(circle at top, #05142e 0, #020b1f 40%, #000814 100%);
       color: var(--text-main);
     }
 
     .page {
-      max-width: 1240px;
+      max-width: 1200px;
       margin: 0 auto;
     }
 
     .title {
-      font-size: 26px;
+      font-size: 24px;
       font-weight: 650;
-      letter-spacing: 0.05em;
-      margin-bottom: 8px;
+      letter-spacing: 0.16em;
+      margin-bottom: 10px;
       display: flex;
       align-items: center;
       gap: 10px;
       text-transform: uppercase;
+      color: #e6f5ff;
     }
 
-    .robot-dot {
+    .title span.robot-dot {
       width: 14px;
       height: 14px;
       border-radius: 999px;
-      background:
-        radial-gradient(circle, #bbf7d0 0, #22c55e 40%, #16a34a 100%);
-      box-shadow: 0 0 18px rgba(34, 197, 94, 0.8);
+      background: radial-gradient(circle, #b9f2ff 0, var(--accent) 40%, #00a3b8 100%);
+      box-shadow: 0 0 18px rgba(0, 176, 202, 0.9);
+      border: 1px solid rgba(92, 212, 255, 0.9);
     }
 
     .subtitle {
-      font-size: 13px;
+      font-size: 12px;
       color: var(--text-muted);
-      max-width: 780px;
-      margin-bottom: 20px;
+      max-width: 760px;
+      margin-bottom: 18px;
     }
 
     .legend {
       display: flex;
       flex-wrap: wrap;
       gap: 10px;
-      margin-bottom: 20px;
-      font-size: 11px;
+      margin-bottom: 22px;
+      font-size: 10px;
       color: var(--text-soft);
     }
 
@@ -97,42 +82,39 @@
       gap: 6px;
       padding: 5px 10px;
       border-radius: 999px;
-      background: rgba(15, 23, 42, 0.9);
-      border: 1px solid rgba(31, 41, 55, 0.9);
+      background: radial-gradient(circle at top left, rgba(0, 74, 124, 0.9), #020b1f);
+      border: 1px solid rgba(29, 64, 105, 0.95);
     }
 
     .legend-dot {
-      width: 10px;
-      height: 10px;
+      width: 9px;
+      height: 9px;
       border-radius: 999px;
     }
 
-    .legend-dot.flow {
-      background: linear-gradient(135deg, #22c55e, #4ade80);
+    .legend-dot.browser {
+      background: linear-gradient(135deg, var(--accent), #5cd4ff);
+    }
+    .legend-dot.backend {
+      background: linear-gradient(135deg, var(--accent-2), #00b0ca);
+    }
+    .legend-dot.data {
+      background: linear-gradient(135deg, #6d28d9, #a855f7);
+    }
+    .legend-dot.external {
+      background: linear-gradient(135deg, var(--accent-4), #fbbf24);
     }
 
-    .legend-dot.event {
-      background: linear-gradient(135deg, #38bdf8, #0ea5e9);
-    }
-
-    .legend-dot.memory {
-      background: linear-gradient(135deg, #a855f7, #8b5cf6);
-    }
-
-    .legend-dot.signal {
-      background: linear-gradient(135deg, #f97316, #fb923c);
-    }
-
-    .workflow {
-      border-radius: 26px;
+    .section {
+      border-radius: 24px;
       padding: 18px 18px 16px;
-      margin-bottom: 20px;
-      background: radial-gradient(circle at top left, #020617 0, #020617 55%, #020617 100%);
-      border: 1px solid rgba(55, 65, 81, 0.8);
+      margin-bottom: 16px;
+      background: radial-gradient(circle at top left, #06152d 0, #020b1f 55%, #020b1f 100%);
+      border: 1px solid rgba(22, 50, 79, 0.95);
       box-shadow: var(--shadow-soft);
     }
 
-    .workflow-header {
+    .section-header {
       display: flex;
       align-items: baseline;
       justify-content: space-between;
@@ -140,127 +122,76 @@
       margin-bottom: 14px;
     }
 
-    .workflow-title {
-      font-size: 15px;
+    .section-title {
+      font-size: 13px;
       font-weight: 600;
       text-transform: uppercase;
       letter-spacing: 0.16em;
       color: var(--text-muted);
     }
 
-    .workflow-tag {
-      font-size: 11px;
-      padding: 4px 10px;
-      border-radius: 999px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      background: rgba(15, 118, 110, 0.18);
-      color: #a5f3fc;
-      border: 1px solid rgba(34, 211, 238, 0.4);
-    }
-
-    .workflow-desc {
-      font-size: 12px;
-      color: var(--text-soft);
-      margin-bottom: 14px;
-      max-width: 900px;
-    }
-
-    /* n8n lane layout */
-    .lanes {
-      display: flex;
-      flex-wrap: wrap;
-      gap: 12px;
-      margin-bottom: 12px;
-    }
-
-    .lane {
-      flex: 1 1 0;
-      min-width: 260px;
-      border-radius: 18px;
-      background: rgba(15, 23, 42, 0.85);
-      border: 1px solid rgba(30, 64, 175, 0.6);
-      padding: 10px 10px 10px;
-      position: relative;
-      overflow: hidden;
-    }
-
-    .lane-title {
-      font-size: 11px;
-      text-transform: uppercase;
-      letter-spacing: 0.16em;
-      color: var(--text-soft);
-      margin-bottom: 6px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      gap: 6px;
-    }
-
-    .lane-tag {
+    .section-tag {
       font-size: 10px;
-      padding: 2px 8px;
+      padding: 4px 9px;
       border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.9);
-      background: rgba(15, 23, 42, 0.9);
-      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.16em;
+      background: linear-gradient(135deg, rgba(0, 74, 124, 0.88), rgba(3, 18, 39, 0.98));
+      color: #c0e4ff;
+      border: 1px solid rgba(61, 110, 153, 0.95);
     }
 
-    .lane-body {
-      position: relative;
-      padding-top: 4px;
-    }
-
-    /* Node (n8n style) */
-    .node {
-      border-radius: var(--radius);
-      padding: 6px 8px;
-      margin-bottom: 8px;
-      background: rgba(15, 23, 42, 0.98);
-      border: 1px solid rgba(55, 65, 81, 1);
-      box-shadow: 0 8px 18px rgba(15, 23, 42, 0.75);
+    .section-desc {
       font-size: 11px;
+      color: var(--text-soft);
+      margin-bottom: 12px;
+      max-width: 880px;
+    }
+
+    /* Flow rows */
+    .flow-row {
+      display: flex;
+      align-items: stretch;
+      justify-content: center;
+      gap: 12px;
+      margin-bottom: 10px;
+      flex-wrap: wrap;
+    }
+
+    .node {
+      min-width: 170px;
+      max-width: 260px;
+      border-radius: var(--radius-lg);
+      padding: 10px 11px;
+      font-size: 11px;
+      border: 1px solid rgba(31, 64, 101, 0.95);
+      background: radial-gradient(circle at top left, rgba(8, 47, 73, 0.9), #020b1f);
       position: relative;
     }
 
-    .node::before {
-      content: "";
-      position: absolute;
-      left: -12px;
-      top: 50%;
-      width: 10px;
-      height: 2px;
-      background: linear-gradient(to right, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.7));
-    }
-
-    .node.first::before {
-      display: none;
-    }
-
-    .node-header {
+    .node-title {
+      font-size: 11px;
+      font-weight: 600;
+      margin-bottom: 4px;
       display: flex;
       align-items: center;
       justify-content: space-between;
-      margin-bottom: 3px;
+      gap: 4px;
+      color: #e6f5ff;
     }
 
-    .node-name {
-      font-weight: 600;
-      font-size: 11px;
-    }
-
-    .node-type {
+    .node-title span.badge {
       font-size: 9px;
       padding: 2px 6px;
       border-radius: 999px;
       text-transform: uppercase;
       letter-spacing: 0.16em;
-      border: 1px solid rgba(55, 65, 81, 0.9);
+      background: rgba(4, 25, 50, 0.98);
+      border: 1px solid rgba(63, 103, 140, 0.95);
       color: var(--text-soft);
     }
 
     .node-body {
-      font-size: 10px;
       color: var(--text-muted);
       line-height: 1.4;
     }
@@ -274,76 +205,96 @@
       margin-bottom: 2px;
     }
 
-    /* Node color themes */
-    .node.trigger {
-      border-color: rgba(34, 197, 94, 0.7);
-      background: linear-gradient(145deg, rgba(34, 197, 94, 0.22), rgba(15, 23, 42, 0.98));
+    /* Node themes */
+    .node.browser {
+      border-color: rgba(0, 176, 202, 0.9);
+      background: radial-gradient(circle at top left, rgba(0, 176, 202, 0.18), #020b1f);
     }
 
-    .node.stt {
-      border-color: rgba(56, 189, 248, 0.8);
-      background: linear-gradient(145deg, rgba(56, 189, 248, 0.18), rgba(15, 23, 42, 0.98));
+    .node.backend {
+      border-color: rgba(0, 114, 206, 0.9);
+      background: radial-gradient(circle at top left, rgba(0, 114, 206, 0.22), #020b1f);
     }
 
     .node.data {
-      border-color: rgba(168, 85, 247, 0.8);
-      background: linear-gradient(145deg, rgba(168, 85, 247, 0.18), rgba(15, 23, 42, 0.98));
+      border-color: rgba(129, 140, 248, 0.95);
+      background: radial-gradient(circle at top left, rgba(79, 70, 229, 0.18), #020b1f);
     }
 
-    .node.llm {
-      border-color: rgba(249, 115, 22, 0.85);
-      background: linear-gradient(145deg, rgba(249, 115, 22, 0.18), rgba(15, 23, 42, 0.98));
+    .node.external {
+      border-color: rgba(249, 168, 37, 0.95);
+      background: radial-gradient(circle at top left, rgba(249, 168, 37, 0.16), #020b1f);
     }
 
-    .node.control {
-      border-color: rgba(148, 163, 184, 0.9);
-      background: linear-gradient(145deg, rgba(148, 163, 184, 0.14), rgba(15, 23, 42, 0.98));
+    .node.robot {
+      border-color: rgba(0, 176, 202, 1);
+      background: radial-gradient(circle at top left, rgba(0, 176, 202, 0.24), #020b1f);
     }
 
-    .node.signal {
-      border-color: rgba(34, 197, 94, 0.95);
-      background: linear-gradient(145deg, rgba(34, 197, 94, 0.28), rgba(15, 23, 42, 0.98));
-    }
-
-    .arrow-label {
-      font-size: 9px;
+    /* Arrows */
+    .arrow {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 80px;
+      padding: 4px 8px;
+      border-radius: 999px;
+      border: 1px dashed rgba(100, 116, 139, 0.9);
       color: var(--text-soft);
-      margin: 2px 0 6px 18px;
+      font-size: 10px;
       position: relative;
+      white-space: nowrap;
+      background: rgba(4, 25, 50, 0.9);
     }
 
-    .arrow-label::before {
-      content: "";
-      position: absolute;
-      left: -10px;
-      top: 50%;
-      width: 8px;
-      height: 1px;
-      background: linear-gradient(to right, rgba(148, 163, 184, 0.1), rgba(148, 163, 184, 0.7));
+    .arrow::after {
+      content: "➜";
+      font-size: 13px;
+      margin-left: 6px;
+      color: var(--accent-3);
     }
 
-    .footer-note {
+    .arrow.vertical {
+      flex-direction: column;
+      width: auto;
+      padding: 2px 6px;
+    }
+
+    .arrow.vertical::after {
+      content: "⬇";
+      font-size: 12px;
+      margin: 2px 0 0 0;
+    }
+
+    .arrow.highlight {
+      border-color: rgba(0, 176, 202, 0.95);
+      color: #c0e4ff;
+      background: radial-gradient(circle at center, rgba(0, 176, 202, 0.18), #020b1f);
+    }
+
+    /* Summary strip */
+    .footer-strip {
+      margin-top: 16px;
       font-size: 11px;
       color: var(--text-soft);
       padding: 10px 12px;
       border-radius: 999px;
-      border: 1px solid rgba(55, 65, 81, 0.8);
-      background: radial-gradient(circle at left, rgba(34, 197, 94, 0.14), #020617);
-      display: inline-flex;
+      border: 1px solid rgba(31, 64, 101, 0.95);
+      background: radial-gradient(circle at left, rgba(0, 176, 202, 0.18), #020b1f);
+      display: flex;
       flex-wrap: wrap;
       gap: 8px;
       align-items: center;
-      margin-top: 4px;
     }
 
-    .footer-note strong {
-      color: var(--accent);
+    .footer-strip strong {
+      color: var(--accent-3);
       font-weight: 600;
     }
 
-    @media (max-width: 960px) {
-      .lane {
-        min-width: 100%;
+    @media (max-width: 900px) {
+      .flow-row {
+        justify-content: flex-start;
       }
     }
   </style>
@@ -352,469 +303,443 @@
   <div class="page">
     <div class="title">
       <span class="robot-dot"></span>
-      n8n Workflows – Meeting Robot Backend & Brain
+      Meeting Room Robot – Architecture with Azure AI Search
     </div>
     <div class="subtitle">
-      Two n8n workflows: (A) Audio Gateway / STT Proxy handling 11Labs transcription, chunking,
-      vectorization, and Supabase writes; (B) Robot Brain that listens to transcript events,
-      pulls context + memory, and decides when to raise a signal.
+      Browser-based robot page streams audio to an n8n Audio Gateway, uses 11Labs for diarized
+      transcription, stores chunks as documents in Azure AI Search for semantic memory, and uses
+      an n8n Robot Brain to raise human-gated robot signals before speaking back with full context.
     </div>
 
     <div class="legend">
       <div class="legend-item">
-        <span class="legend-dot flow"></span> Main flow of data
+        <span class="legend-dot browser"></span> Browser / Meeting Room UI
       </div>
       <div class="legend-item">
-        <span class="legend-dot event"></span> Events / triggers
+        <span class="legend-dot backend"></span> Backend & APIs / n8n Workflows
       </div>
       <div class="legend-item">
-        <span class="legend-dot memory"></span> Supabase / semantic memory
+        <span class="legend-dot.data"></span> Azure AI Search & Metadata DB
       </div>
       <div class="legend-item">
-        <span class="legend-dot.signal"></span> Robot signals to backend API
+        <span class="legend-dot.external"></span> External AI Services (11Labs, Azure OpenAI, etc.)
       </div>
     </div>
 
-    <!-- WORKFLOW A: AUDIO + STT + CHUNKS + VECTORS -->
-    <div class="workflow">
-      <div class="workflow-header">
-        <div class="workflow-title">A. Audio → STT → Chunks → Vectors (Backend Pipeline)</div>
-        <div class="workflow-tag">Audio Gateway / STT Proxy</div>
+    <!-- SECTION 1: Real-time listening & transcription -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">1. Real-Time Listening & Transcription</div>
+        <div class="section-tag">Data Plane – Audio & STT</div>
       </div>
-      <div class="workflow-desc">
-        n8n workflow receives browser audio chunks, calls 11Labs STT with diarization,
-        assembles stable 5–10s transcript chunks, vectorizes them via an embedding API, and writes
-        into Supabase (<code>transcript_chunks</code> + embedding/vector column).
+      <div class="section-desc">
+        Browser mic sends audio into an n8n-based Audio Gateway / STT Proxy, which calls 11Labs
+        for diarized transcription and passes normalized text segments into the chunking and indexing
+        pipeline.
       </div>
 
-      <div class="lanes">
-        <!-- Lane 1: Ingress & STT -->
-        <div class="lane">
-          <div class="lane-title">
-            Ingress & STT
-            <span class="lane-tag">Audio → Text</span>
+      <div class="flow-row">
+        <div class="node browser">
+          <div class="node-title">
+            <span>Robot Portal (Browser)</span>
+            <span class="badge">Client</span>
           </div>
-          <div class="lane-body">
-            <div class="node trigger first">
-              <div class="node-header">
-                <div class="node-name">Webhook: /audio-chunk</div>
-                <div class="node-type">Trigger</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Entry point from browser portal</li>
-                  <li>Receives meeting_id + audio blob</li>
-                  <li>Generates <code>client_chunk_id</code></li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">clean + normalize inputs</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">Function: Prepare STT Request</div>
-                <div class="node-type">Code</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Validates meeting_id & auth</li>
-                  <li>Attaches diarization parameters</li>
-                  <li>Maps audio blob to 11Labs format</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">call 11Labs STT</div>
-
-            <div class="node stt">
-              <div class="node-header">
-                <div class="node-name">HTTP: 11Labs STT + Diarization</div>
-                <div class="node-type">HTTP</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>POST audio to 11Labs transcription API</li>
-                  <li>Requests multi-speaker diarization</li>
-                  <li>Receives segments + timestamps</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">normalize 11Labs response</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">Function: Normalize STT Output</div>
-                <div class="node-type">Code</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Flattens segments to transcript text</li>
-                  <li>Builds <code>speakers[]</code> JSON</li>
-                  <li>Maps timestamps → session clock</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>Mic capture (getUserMedia + MediaRecorder)</li>
+              <li>Uploads audio chunks (<code>/audio-chunk</code>) with meeting_id</li>
+              <li>Shows live transcript + robot suggestions UI</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Lane 2: Chunking & Supabase write -->
-        <div class="lane">
-          <div class="lane-title">
-            Chunking & Storage
-            <span class="lane-tag">5–10s transcript chunks</span>
+        <div class="arrow">audio chunks (webm/pcm)</div>
+
+        <div class="node backend">
+          <div class="node-title">
+            <span>n8n – Audio Gateway / STT Proxy</span>
+            <span class="badge">Workflow A</span>
           </div>
-          <div class="lane-body">
-            <div class="node control first">
-              <div class="node-header">
-                <div class="node-name">Function: Build Chunk Window</div>
-                <div class="node-type">Code</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Aggregates STT segments into 5–10s window</li>
-                  <li>Computes <code>chunk_index</code></li>
-                  <li>Prepares row for <code>transcript_chunks</code></li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">upsert chunk row</div>
-
-            <div class="node data">
-              <div class="node-header">
-                <div class="node-name">Supabase: Insert Transcript Chunk</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Insert / upsert into <code>transcript_chunks</code></li>
-                  <li>Columns: meeting_id, chunk_index, times</li>
-                  <li>Saves transcript, speakers, metadata JSON</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">emit event for live UIs & robot</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">HTTP: Publish Transcript Event</div>
-                <div class="node-type">HTTP / WS</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>POST to event bus or WS gateway</li>
-                  <li>Payload: new chunk (normalized)</li>
-                  <li>Feeds browser live transcript + Robot Brain</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>Webhook node: receive audio chunk</li>
+              <li>Function: prepare STT request (meeting_id, diarization)</li>
+              <li>Ensures idempotent <code>client_chunk_id</code></li>
+            </ul>
           </div>
         </div>
 
-        <!-- Lane 3: Vectorization & Semantic Enrichment -->
-        <div class="lane">
-          <div class="lane-title">
-            Vectorization & Semantic Enrichment
-            <span class="lane-tag">Background path</span>
+        <div class="arrow">STT call</div>
+
+        <div class="node external">
+          <div class="node-title">
+            <span>11Labs STT + Diarization</span>
+            <span class="badge">External</span>
           </div>
-          <div class="lane-body">
-            <div class="node trigger first">
-              <div class="node-header">
-                <div class="node-name">Supabase: New Chunk Trigger</div>
-                <div class="node-type">Trigger / Poll</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Runs on newly inserted chunks</li>
-                  <li>Filters “not yet embedded” rows</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">create embedding</div>
-
-            <div class="node llm">
-              <div class="node-header">
-                <div class="node-name">HTTP: Embedding API</div>
-                <div class="node-type">HTTP</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Calls Azure OpenAI / OpenAI embeddings</li>
-                  <li>Input: <code>transcript</code></li>
-                  <li>Output: vector + model name</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">write vector to Supabase</div>
-
-            <div class="node data">
-              <div class="node-header">
-                <div class="node-name">Supabase: Update Embedding Column</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Update <code>embedding</code>, <code>embedding_model</code></li>
-                  <li>Sets <code>embedding_created_at</code></li>
-                  <li>Now searchable via pgvector</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">optional: build semantic state</div>
-
-            <div class="node llm">
-              <div class="node-header">
-                <div class="node-name">LLM: Extract Decisions / Actions</div>
-                <div class="node-type">LLM</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Summarizes chunk into structured facts</li>
-                  <li>e.g., decisions, risks, owners, dates</li>
-                  <li>Writes into a <code>meeting_semantic_state</code> table</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>Multi-speaker diarization enabled</li>
+              <li>Returns segments + timestamps per speaker</li>
+              <li>Partial & final hypotheses</li>
+            </ul>
           </div>
         </div>
       </div>
 
-      <div class="footer-note">
-        <strong>Outcome:</strong> STT pipeline in n8n turns raw audio → diarized text chunks in Supabase
-        → searchable vectors + optional structured semantic state for the Robot Brain.
+      <div class="flow-row">
+        <div class="arrow highlight vertical">
+          final diarized text
+        </div>
+
+        <div class="node backend">
+          <div class="node-title">
+            <span>n8n – Normalize & Chunk Builder</span>
+            <span class="badge">Workflow A</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Normalize 11Labs output to clean transcript</li>
+              <li>Aggregate into 5–10 sec chunks per meeting</li>
+              <li>Compute <code>chunkIndex</code>, <code>timestampStart/End</code></li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">chunk doc (JSON)</div>
+
+        <div class="node external">
+          <div class="node-title">
+            <span>Azure OpenAI – Embeddings</span>
+            <span class="badge">External</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Input: chunk <code>text</code> content</li>
+              <li>Output: embedding vector (e.g. 1536 dims)</li>
+              <li>Attached as <code>textVector</code> field</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">doc + vector</div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Azure AI Search – Index: <code>meeting-transcript-chunks</code></span>
+            <span class="badge">Memory</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Document per chunk (meetingId, chunkIndex, timestamps)</li>
+              <li>Fields: <code>text</code>, <code>speakerLabels</code>, metadata</li>
+              <li>Vector field: <code>textVector</code> for semantic search</li>
+            </ul>
+          </div>
+        </div>
       </div>
     </div>
 
-    <!-- WORKFLOW B: ROBOT BRAIN -->
-    <div class="workflow">
-      <div class="workflow-header">
-        <div class="workflow-title">B. Robot Brain – Signals & Context-Aware Decisions</div>
-        <div class="workflow-tag">Decision Engine / n8n</div>
+    <!-- SECTION 2: Storage & semantic context (Azure Search + DB) -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">2. Memory & Semantic Context (Azure Search + Metadata DB)</div>
+        <div class="section-tag">Context Layer</div>
       </div>
-      <div class="workflow-desc">
-        A second n8n workflow listens to transcript events, pulls recent chunks and semantic state
-        from Supabase, maintains memory of previous robot actions, and decides whether to raise a
-        new robot signal to the backend (<code>/meetings/{id}/robot/signals</code>).
+      <div class="section-desc">
+        Azure AI Search becomes the canonical memory for all diarized transcript chunks. A small
+        metadata DB tracks meetings, robot signals, and robot turns, while background workflows
+        maintain semantic state (decisions, risks, actions) on top of the search index.
       </div>
 
-      <div class="lanes">
-        <!-- Lane 1: Event subscription -->
-        <div class="lane">
-          <div class="lane-title">
-            Transcript Events
-            <span class="lane-tag">Streaming trigger</span>
+      <div class="flow-row">
+        <div class="node data">
+          <div class="node-title">
+            <span>Metadata DB – <code>meeting_sessions</code></span>
+            <span class="badge">Relational</span>
           </div>
-          <div class="lane-body">
-            <div class="node trigger first">
-              <div class="node-header">
-                <div class="node-name">Webhook / WS: Transcript Event In</div>
-                <div class="node-type">Trigger</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Called whenever a new chunk is stored</li>
-                  <li>Receives meeting_id + chunk metadata</li>
-                  <li>Acts as the Robot Brain entry point</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">debounce / throttle</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">Function: Throttle Per Meeting</div>
-                <div class="node-type">Code</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Ensures robot doesn’t run too often</li>
-                  <li>e.g., at most every 30–60 seconds</li>
-                  <li>Skips if previous evaluation was recent</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>Meeting metadata (title, tenant, host)</li>
+              <li>Start / end timestamps</li>
+              <li>Links to robot signals & robot turns</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Lane 2: Context & memory fetch -->
-        <div class="lane">
-          <div class="lane-title">
-            Context & Memory
-            <span class="lane-tag">Supabase reads</span>
+        <div class="arrow vertical">
+          1:N relationship via meetingId
+        </div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Azure AI Search – Transcript Index</span>
+            <span class="badge">Search</span>
           </div>
-          <div class="lane-body">
-            <div class="node data first">
-              <div class="node-header">
-                <div class="node-name">Supabase: Recent Transcript Window</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Query last N minutes of chunks for meeting</li>
-                  <li>Ordered by <code>chunk_index</code> desc</li>
-                  <li>Provides “what just happened” context</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">semantic state</div>
-
-            <div class="node data">
-              <div class="node-header">
-                <div class="node-name">Supabase: Semantic State</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Reads <code>meeting_semantic_state</code></li>
-                  <li>Decisions, open questions, risks, actions</li>
-                  <li>Helps robot avoid repeating itself</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">robot’s own memory</div>
-
-            <div class="node data">
-              <div class="node-header">
-                <div class="node-name">Supabase: Robot Memory / Turns</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Previous robot signals & responses</li>
-                  <li>Feedback: helpful / not helpful</li>
-                  <li>Prevents duplicate suggestions</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>All chunks for all meetings as documents</li>
+              <li>Filterable by <code>meetingId</code>, <code>tenantId</code>, times</li>
+              <li>Supports vector + semantic + keyword queries</li>
+            </ul>
           </div>
         </div>
 
-        <!-- Lane 3: Decision logic -->
-        <div class="lane">
-          <div class="lane-title">
-            Decision Logic
-            <span class="lane-tag">LLM + Rules</span>
-          </div>
-          <div class="lane-body">
-            <div class="node llm first">
-              <div class="node-header">
-                <div class="node-name">LLM: Analyze Recent Discussion</div>
-                <div class="node-type">LLM</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Input: recent transcript + semantic state</li>
-                  <li>Output: issues, open questions, gaps</li>
-                  <li>Can be run via n8n “AI” or HTTP → AOAI</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">should robot speak?</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">Function: Decide Signal or No</div>
-                <div class="node-type">Code</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Interprets LLM output</li>
-                  <li>Checks cool-down period</li>
-                  <li>Sets <code>raise_signal</code> + <code>signal_type</code></li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">branch on result</div>
-
-            <div class="node control">
-              <div class="node-header">
-                <div class="node-name">Switch: Raise or Skip</div>
-                <div class="node-type">Control</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>If <code>raise_signal = false</code> → stop</li>
-                  <li>If true → build signal payload</li>
-                </ul>
-              </div>
-            </div>
-          </div>
+        <div class="arrow vertical">
+          background enrichment
         </div>
 
-        <!-- Lane 4: Signal creation & logging -->
-        <div class="lane">
-          <div class="lane-title">
-            Signal Creation
-            <span class="lane-tag">Backend callback</span>
+        <div class="node external">
+          <div class="node-title">
+            <span>n8n – Semantic State Builder</span>
+            <span class="badge">Workflow</span>
           </div>
-          <div class="lane-body">
-            <div class="node llm first">
-              <div class="node-header">
-                <div class="node-name">LLM: Draft Signal Preview & Title</div>
-                <div class="node-type">LLM</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Generates concise title + preview text</li>
-                  <li>Optional: pre-draft full robot response</li>
-                  <li>Examples: “Clarify timeline”, “Summarize risks”</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">call backend signal API</div>
-
-            <div class="node signal">
-              <div class="node-header">
-                <div class="node-name">HTTP: POST /meetings/{id}/robot/signals</div>
-                <div class="node-type">HTTP</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Payload: signal_type, title, preview, full_message</li>
-                  <li>Backend persists into <code>robot_signals</code></li>
-                  <li>UI shows the suggestion for human acceptance</li>
-                </ul>
-              </div>
-            </div>
-
-            <div class="arrow-label">log robot intent</div>
-
-            <div class="node data">
-              <div class="node-header">
-                <div class="node-name">Supabase: Append Robot Turn</div>
-                <div class="node-type">Supabase</div>
-              </div>
-              <div class="node-body">
-                <ul>
-                  <li>Logs the fact robot “wanted to speak”</li>
-                  <li>Includes generated signal_id (from API)</li>
-                  <li>Used in future memory & analytics</li>
-                </ul>
-              </div>
-            </div>
+          <div class="node-body">
+            <ul>
+              <li>Polls new chunks or uses Azure Search queries</li>
+              <li>LLM extracts decisions, actions, risks</li>
+              <li>Writes structured state into metadata DB (e.g. <code>meeting_semantic_state</code>)</li>
+            </ul>
           </div>
         </div>
-
       </div>
 
-      <div class="footer-note">
-        <strong>Outcome:</strong>
-        Robot Brain workflow listens to new transcript chunks, understands recent context + past
-        actions, and only then raises a carefully-scoped robot signal into your backend
-        for human approval.
+      <div class="flow-row">
+        <div class="node data">
+          <div class="node-title">
+            <span>Metadata DB – <code>robot_signals</code></span>
+            <span class="badge">Control</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Pending / accepted / rejected / expired signals</li>
+              <li>Linked to meeting via <code>meetingId</code></li>
+              <li>Used for human-gated turn-taking</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow vertical">
+          1:N per meeting
+        </div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Metadata DB – <code>robot_turns</code></span>
+            <span class="badge">Memory</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>What robot actually said (utterances)</li>
+              <li>Associated signal, time, feedback</li>
+              <li>Helps avoid repetition and tune behaviour</li>
+            </ul>
+          </div>
+        </div>
       </div>
+    </div>
+
+    <!-- SECTION 3: Robot signals & responses (Robot Brain) -->
+    <div class="section">
+      <div class="section-header">
+        <div class="section-title">3. Robot Brain – Signals & Human-Gated Responses</div>
+        <div class="section-tag">Decision & Control Plane</div>
+      </div>
+      <div class="section-desc">
+        An n8n-based Robot Brain listens to transcript events, uses Azure AI Search to fetch recent
+        context and semantically relevant chunks, consults its own memory of previous actions, and
+        decides when to raise a new robot signal. Only the last accepted signal drives what the robot
+        will actually say.
+      </div>
+
+      <div class="flow-row">
+        <div class="node backend">
+          <div class="node-title">
+            <span>n8n – Transcript Event Trigger</span>
+            <span class="badge">Workflow B</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Triggered when new chunk indexed or event emitted</li>
+              <li>Receives <code>meetingId</code>, <code>chunkIndex</code></li>
+              <li>Function: throttle evaluations per meeting</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">context fetch</div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Azure AI Search – Context Queries</span>
+            <span class="badge">Search</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Fetch last N chunks: filter by <code>meetingId</code>, sort by time</li>
+              <li>Semantic / vector queries: “decisions”, “risks”, “open questions”</li>
+              <li>Builds a compact recent context window for the LLM</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">semantic + memory</div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Metadata DB – Semantic State & Robot Memory</span>
+            <span class="badge">DB</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Read structured state from <code>meeting_semantic_state</code></li>
+              <li>Read prior <code>robot_signals</code> + <code>robot_turns</code></li>
+              <li>Include feedback to avoid repeated suggestions</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">LLM reasoning</div>
+
+        <div class="node external">
+          <div class="node-title">
+            <span>Azure OpenAI – Decision LLM</span>
+            <span class="badge">External</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Input: recent transcript + semantic state + memory</li>
+              <li>Output: potential issues, questions, missing owners/dates</li>
+              <li>n8n Function interprets to decide <code>raise_signal</code> & type</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="arrow vertical">
+          branch: raise or skip
+        </div>
+
+        <div class="node external">
+          <div class="node-title">
+            <span>Azure OpenAI – Draft Signal Content</span>
+            <span class="badge">External</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Generates: <strong>title</strong>, <strong>preview</strong>, <strong>full_message</strong></li>
+              <li>Signal types: clarification, summary, risk, action items, etc.</li>
+              <li>Short, human-friendly explanation for the host</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow highlight">create robot signal</div>
+
+        <div class="node backend">
+          <div class="node-title">
+            <span>Backend API – <code>POST /meetings/{id}/robot/signals</code></span>
+            <span class="badge">API</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Writes signal to <code>robot_signals</code> (metadata DB)</li>
+              <li>Assigns <code>signalIndex</code>, sets state = pending</li>
+              <li>Publishes event to browser clients via WS/SSE</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">WS event</div>
+
+        <div class="node robot">
+          <div class="node-title">
+            <span>Robot Suggestions Panel (Browser)</span>
+            <span class="badge">UI</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Displays pending signals (title + preview + type)</li>
+              <li>Host clicks Accept / Dismiss</li>
+              <li>Only last accepted signal is considered “active”</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+
+      <div class="flow-row">
+        <div class="node browser">
+          <div class="node-title">
+            <span>Host Accepts Signal</span>
+            <span class="badge">Browser</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Calls <code>POST /robot-signals/{id}/accept</code></li>
+              <li>Optionally includes user/device info</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow highlight">
+          mark last accepted
+        </div>
+
+        <div class="node backend">
+          <div class="node-title">
+            <span>Backend – Signal State Manager</span>
+            <span class="badge">API</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Marks previous accepted signals as expired</li>
+              <li>Marks current signal as accepted</li>
+              <li>Emits “signal_accepted” event for Robot Brain</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow">context + signal</div>
+
+        <div class="node external">
+          <div class="node-title">
+            <span>Azure OpenAI + 11Labs – Robot Response</span>
+            <span class="badge">External</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Fetches broader context from Azure Search (full meeting)</li>
+              <li>LLM crafts final robot response with full awareness</li>
+              <li>11Labs TTS generates speech to play into room</li>
+            </ul>
+          </div>
+        </div>
+
+        <div class="arrow vertical">
+          log & learn
+        </div>
+
+        <div class="node data">
+          <div class="node-title">
+            <span>Metadata DB – Log Robot Utterance</span>
+            <span class="badge">Memory</span>
+          </div>
+          <div class="node-body">
+            <ul>
+              <li>Store spoken text, timing, related signal</li>
+              <li>Feedback: helpful / not helpful (optional)</li>
+              <li>Feeds future Robot Brain decisions & analytics</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="footer-strip">
+      <strong>Concept in one line:</strong>
+      Browser mic → n8n Audio Gateway → 11Labs STT → Azure AI Search transcript index →
+      n8n Robot Brain + Azure OpenAI → human-approved robot signal → robot speaks back with
+      full, Azure Search–powered context.
     </div>
   </div>
 </body>
